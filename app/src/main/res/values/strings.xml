@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">suitcase</string>
+    <string name="state_connected">状态：已连接</string>
+    <string name="state_disconnected">状态：未连接</string>
+    <string name="connected">连接</string>
+    <string name="disconnected">断开</string>
+    <string name="scanning">扫描中...</string>
+    <string name="connecting">连接中...</string>
+    <string name="disconnecting">正在断开...</string>
+    <string name="dev_conn_number">设备连接数量：</string>
+
+    <string name="blestatus">连接状态</string>
+</resources>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.fog.suitcase.MainActivity"
+    android:orientation="vertical"
+    android:baselineAligned="false">
+
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:baselineAligned="false">-->
+
+        <!--<Button-->
+            <!--android:id="@+id/btn_scanBle"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="扫描Ble" />-->
+
+    <!--</LinearLayout>-->
+
+    <TextView
+        android:id="@+id/txtv_connNum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/dev_conn_number"
+        android:layout_marginLeft="8dp"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+    <ListView
+        android:id="@+id/lstv_devList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"></ListView>
+
+    <ListView
+        android:id="@+id/lstv_showService"
+        android:layout_width="match_parent"
+        android:layout_marginTop="16dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"></ListView>
+</LinearLayout>

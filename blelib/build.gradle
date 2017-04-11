@@ -1,0 +1,65 @@
+apply plugin: 'com.android.library'
+
+ext {
+    libraryVersion = '1.2.3'
+
+    bintrayRepo = 'maven'
+    bintrayName = 'blelib'
+
+    publishedGroupId = 'com.junkchen.blelib'
+    libraryName = 'blelib'
+    artifactId = 'blelib'
+
+    libraryDescription = 'BleLib是Android低功耗蓝牙4.0及以上开发的辅助库，一行代码解决Ble初始化、扫描、连接等操作。'
+
+    siteUrl = 'https://github.com/junkchen/BleLib'
+    issueUrl = 'https://github.com/junkchen/BleLib/issues'
+    gitUrl = 'https://github.com/junkchen/BleLib.git'
+
+    developerId = 'junkchen'
+    developerName = 'Junk Chen'
+    developerEmail = 'junkchen@vip.qq.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        minSdkVersion 18
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.2.3"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+//        disable 'MissingTranslation'
+//        ignoreWarnings true
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+}
+
+apply from: 'install.gradle'
+apply from: 'bintray.gradle'
+//https://oss.sonatype.org/content/repositories/releases/com/junkchen/blelib
+//Android Studio 发布库到jcenter步骤：
+// 1、Gradle->other->install
+// 2、将build/poms/下的 pom-default.xml 文件复制到 build/libs/中，并修改其后缀名为 blelib-1.0.0.pom
+// 3、将build/outputs/aar/下的 blelib-release.aar 文件复制到 build/libs/中，更名如：blelib-1.0.0.aar
+// 4、Gradle->publishing->bintrayUpload
