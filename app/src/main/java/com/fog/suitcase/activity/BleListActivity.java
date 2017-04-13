@@ -96,7 +96,8 @@ public class BleListActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
 
-                        Intent intent = new Intent(context, BleInfoActivity.class);
+                        Intent intent = new Intent(context, CtrlSuitActivity.class);
+//                        Intent intent = new Intent(context, BleInfoActivity.class);
                         intent.putExtra("mac", (String) deviceMap.get("address"));
                         startActivity(intent);
                     }

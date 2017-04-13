@@ -1,10 +1,12 @@
-package com.fog.suitcase;
+package com.fog.suitcase.activity;
 
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.fog.suitcase.R;
 
 public class CharacteristicActivity extends AppCompatActivity {
 
