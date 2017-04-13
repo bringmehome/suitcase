@@ -72,6 +72,7 @@ public class BleListActivity extends AppCompatActivity {
 
                 stopScanLeDevice();
                 deviceList.clear();
+                devices.clear();
                 deviceAdapter.notifyDataSetChanged();
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
