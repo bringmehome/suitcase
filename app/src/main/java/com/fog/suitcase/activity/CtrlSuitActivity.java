@@ -205,7 +205,12 @@ public class CtrlSuitActivity extends AppCompatActivity {
         int status = R.string.connecting;
         switch (code) {
             case STATE_DISCONNECTED:
-                status = R.string.state_disconnected;
+                status = R.string.tryagain;
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        ble_status.setText(R.string.connecting);
+                    }
+                }, 2000);
                 break;
             case STATE_CONNECTED:
                 status = R.string.state_connected;

@@ -3,6 +3,7 @@
     <string name="connecting">连接中...</string>
     <string name="state_connected">已连接</string>
     <string name="state_disconnected">已断开</string>
+    <string name="tryagain">再次尝试</string>
     <string name="connected">连接</string>
     <string name="disconnected">断开</string>
     <string name="scanning">扫描中...</string>

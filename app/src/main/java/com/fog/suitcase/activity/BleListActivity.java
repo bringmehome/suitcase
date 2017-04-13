@@ -46,6 +46,8 @@ public class BleListActivity extends AppCompatActivity {
     // 临时存储devices
     private List<BluetoothDevice> devices = new ArrayList<>();
 
+    private BluetoothLeScanner scanner;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +56,7 @@ public class BleListActivity extends AppCompatActivity {
         // 初始化界面
         initView();
         initAdapter();
-        scanLeDevice(true);
+        scanLeDevice();
     }
 
     /**
@@ -67,9 +69,14 @@ public class BleListActivity extends AppCompatActivity {
         mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 
             public void onRefresh() {
+
+                stopScanLeDevice();
+                deviceList.clear();
+                deviceAdapter.notifyDataSetChanged();
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
                         mSwipeLayout.setRefreshing(false);
+                        scanLeDevice();
                     }
                 }, 2000);
             }
@@ -109,7 +116,7 @@ public class BleListActivity extends AppCompatActivity {
         serviceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, serviceList);
     }
 
-    private void scanLeDevice(boolean paramBoolean) {
+    private void scanLeDevice() {
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);//这里与标准蓝牙略有不同
         BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
 
@@ -117,8 +124,12 @@ public class BleListActivity extends AppCompatActivity {
         if (!bluetoothAdapter.isEnabled()) {
             bluetoothAdapter.enable();
         }
-        BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
+        scanner = bluetoothAdapter.getBluetoothLeScanner();
         scanner.startScan(leCallback);
+    }
+
+    private void stopScanLeDevice(){
+        scanner.stopScan(leCallback);
     }
 
     ScanCallback leCallback = new ScanCallback() {
@@ -130,13 +141,16 @@ public class BleListActivity extends AppCompatActivity {
                 if (!devices.contains(device)) {  //判断是否已经添加
                     devices.add(device);
 
-                    String tmpDevName = device.getName() != null ? device.getName() : "Unknow";
-                    String tmpDevAddress = device.getAddress();
-                    HashMap<String, Object> deviceMap = new HashMap<>();
-                    deviceMap.put("name", tmpDevName);
-                    deviceMap.put("address", tmpDevAddress);
-                    deviceMap.put("isConnect", false);
-                    deviceList.add(deviceMap);
+                    if(device.getName() != null){
+                        String tmpDevName = device.getName();
+//                        String tmpDevName = device.getName() != null ? device.getName() : "Unknow";
+                        String tmpDevAddress = device.getAddress();
+                        HashMap<String, Object> deviceMap = new HashMap<>();
+                        deviceMap.put("name", tmpDevName);
+                        deviceMap.put("address", tmpDevAddress);
+                        deviceMap.put("isConnect", false);
+                        deviceList.add(deviceMap);
+                    }
                     deviceAdapter.notifyDataSetChanged();
                 }
             }

@@ -3,9 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/theme_bg"
     android:baselineAligned="false"
     android:orientation="vertical"
-    tools:context="com.fog.suitcase.activity.IndexActivity">
+    tools:context="com.fog.suitcase.activity.BleListActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/location_btn_pad"
+        android:background="@color/white"
+        android:gravity="center"
+        android:paddingBottom="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_horizontal_margin"
+        android:text="@string/scanning"
+        android:textSize="@dimen/font_size" />
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/id_swipe_ly"
@@ -16,6 +28,7 @@
             android:id="@+id/index_devList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:footerDividersEnabled="false"></ListView>
+            android:divider="@color/theme_bg"
+            android:dividerHeight="2px"></ListView>
     </android.support.v4.widget.SwipeRefreshLayout>
 </LinearLayout>

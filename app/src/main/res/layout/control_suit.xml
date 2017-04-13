@@ -9,6 +9,8 @@
         android:id="@+id/ble_status1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/location_btn_pad"
+        android:background="@color/white"
         android:gravity="center"
         android:paddingBottom="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_horizontal_margin"
@@ -19,10 +21,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
-        android:paddingTop="@dimen/location_pad"
-        android:paddingBottom="@dimen/location_pad"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/location_pad"
+        android:paddingTop="@dimen/location_pad">
 
         <ImageView
             android:layout_width="@dimen/location_img"
