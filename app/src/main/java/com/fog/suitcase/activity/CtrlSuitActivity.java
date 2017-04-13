@@ -1,11 +1,9 @@
 package com.fog.suitcase.activity;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -15,21 +13,23 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fog.suitcase.R;
-import com.fog.suitcase.helper.MyGattAttributes;
+import com.fog.suitcase.helper.COMPARA;
 import com.junkchen.blelib.BleService;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.bluetooth.BluetoothAdapter.STATE_CONNECTING;
+import static android.bluetooth.BluetoothProfile.STATE_CONNECTED;
+import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTED;
 
 /**
  * Created by SIN on 2017/4/13.
@@ -38,33 +38,40 @@ import java.util.List;
 public class CtrlSuitActivity extends AppCompatActivity {
     private String TAG = "---bleinfo---";
     public static final int SERVICE_BIND = 1;
-    public static final int SERVICE_SHOW = 3;
     public static final int _UPDATETV = 2;
+
+    // 更新经纬度
+    public static final int _UP_LOCATION = 4;
+    public static final int _UP_SWITCH = 5;
+    public static final int _UP_ALERT = 6;
+    public static final int _UP_DEVID = 7;
 
     private Context context;
 
     private String mac;
     private BleService mBleService;
 
-    private BluetoothManager bleMan;
-    private BluetoothAdapter bleAdapter;
-    private BluetoothGatt bleGatt;
     private boolean mIsBind;//是否已经绑定
 
     private TextView ble_status;
-    private ListView ble_showser;
     private TextView update_loc;
+    private TextView longitude_tvid;
+    private TextView latitude_tvid;
+    private Switch lock_switch;
+    private Switch lock_alert;
 
     /**
      * 蓝牙服务的列表
      */
-    private List<String> serviceList;
-    private ArrayAdapter<String> serviceAdapter;
-    private List<BluetoothGattService> gattServiceList;
     private List<String[]> characteristicList;
     // 服务列表
     private BluetoothGatt mGatt;
 
+    // 各种服务的UUID
+    private BluetoothGattCharacteristic bgc_location = null;
+    private BluetoothGattCharacteristic bgc_switch = null;
+    private BluetoothGattCharacteristic bgc_alert = null;
+    private BluetoothGattCharacteristic bgc_devid = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,36 +92,52 @@ public class CtrlSuitActivity extends AppCompatActivity {
     private void initView() {
         update_loc = (TextView) findViewById(R.id.update_loc);
         ble_status = (TextView) findViewById(R.id.ble_status1);
-        ble_showser = (ListView) findViewById(R.id.ble_showser1);
 
-        ble_showser.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.i(TAG, "position = " + position + ", id = " + characteristicList.get((int) id));
+        longitude_tvid = (TextView) findViewById(R.id.longitude_tvid);
+        latitude_tvid = (TextView) findViewById(R.id.latitude_tvid);
+        lock_switch = (Switch) findViewById(R.id.lock_switch);
+        lock_alert = (Switch) findViewById(R.id.lock_alert);
 
-                Log.d(TAG, gattServiceList.get(position).getUuid()+"");
 
-//                Intent intent = new Intent(MainActivity.this, CharacteristicActivity.class);
-//                intent.putExtra("characteristic", characteristicList.get((int) id));
-//                startActivity(intent);
-//
-//                byte [] k = new byte[] {0x7e, 0x14, 0x00, 0x00,0x00,(byte) 0xaa};
-                byte [] k = new byte[] {0x01};
-                sendCommand(k, gattServiceList.get(position).getCharacteristics().get(0));
-            }
-        });
+        characteristicList = new ArrayList<>();
 
         update_loc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mGatt.readCharacteristic(gattServiceList.get(0).getCharacteristics().get(1));
+                if (null != bgc_location)
+                    mGatt.readCharacteristic(bgc_location);
             }
         });
 
-        serviceList = new ArrayList<>();
-        characteristicList = new ArrayList<>();
-        serviceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, serviceList);
-        ble_showser.setAdapter(serviceAdapter);
+        lock_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                byte[] k;
+                if (isChecked) {
+                    k = new byte[]{0x01};
+                } else {
+                    k = new byte[]{0x00};
+                }
+                if (null != bgc_switch)
+                    sendCommand(k, bgc_switch);
+            }
+        });
+
+        lock_alert.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                byte[] k;
+                if (isChecked) {
+                    k = new byte[]{0x01};
+                } else {
+                    k = new byte[]{0x00};
+                }
+                if (null != bgc_alert)
+                    sendCommand(k, bgc_alert);
+            }
+        });
     }
 
     private void connectble() {
@@ -122,7 +145,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
             mBleService.connect(mac);
     }
 
-    private void sendCommand(byte[] data, BluetoothGattCharacteristic characteristic){
+    private void sendCommand(byte[] data, BluetoothGattCharacteristic characteristic) {
         //将指令放置进特征中
         characteristic.setValue(data);
         //设置回复形式
@@ -138,11 +161,10 @@ public class CtrlSuitActivity extends AppCompatActivity {
             if (mBleService != null) mHandler.sendEmptyMessage(SERVICE_BIND);
             if (mBleService.initialize()) {
                 if (mBleService.enableBluetooth(true)) {
-                    Toast.makeText(context, "Bluetooth was opened", Toast.LENGTH_SHORT).show();
                     connectble();
                 }
             } else {
-                Toast.makeText(context, "not support Bluetooth", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Not support Bluetooth", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -158,20 +180,42 @@ public class CtrlSuitActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case SERVICE_BIND:
-                    ble_status.setText("当前状态：" + SERVICE_BIND);
+                    ble_status.setText(getStatus(SERVICE_BIND));
                     setBleServiceListener();
                     break;
                 case _UPDATETV:
-                    ble_status.setText("当前状态：" + msg.obj.toString());
+                    ble_status.setText(getStatus(Integer.parseInt(msg.obj.toString())));
                     if (msg.obj.toString().equals("0"))
                         connectble();
                     break;
-                case SERVICE_SHOW:
-                    serviceAdapter.notifyDataSetChanged();
+                case _UP_LOCATION:
+                    longitude_tvid.setText(msg.obj.toString());
                     break;
             }
         }
     };
+
+    /**
+     * 获取显示的状态
+     *
+     * @param code
+     * @return
+     */
+    private int getStatus(int code) {
+        int status = R.string.connecting;
+        switch (code) {
+            case STATE_DISCONNECTED:
+                status = R.string.state_disconnected;
+                break;
+            case STATE_CONNECTED:
+                status = R.string.state_connected;
+                break;
+            case STATE_CONNECTING:
+                status = R.string.connecting;
+                break;
+        }
+        return status;
+    }
 
     private void setBleServiceListener() {
         mBleService.setOnServicesDiscoveredListener(new BleService.OnServicesDiscoveredListener() {
@@ -180,29 +224,29 @@ public class CtrlSuitActivity extends AppCompatActivity {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
 
                     mGatt = gatt;
-
-//                    gatt.readCharacteristic(characteristics.get(i));
-
-                    gattServiceList = gatt.getServices();
-                    serviceList.clear();
-                    for (BluetoothGattService service : gattServiceList) {
-                        String serviceUuid = service.getUuid().toString();
-                        serviceList.add(MyGattAttributes.lookup(serviceUuid, "Unknown") + "\n" + serviceUuid);
-                        Log.d(TAG, MyGattAttributes.lookup(serviceUuid, "Unknown") + "\n" + serviceUuid);
+                    for (BluetoothGattService service : gatt.getServices()) {
 
                         List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
-                        String[] charArra = new String[characteristics.size()];
                         for (int i = 0; i < characteristics.size(); i++) {
 
                             String charUuid = characteristics.get(i).getUuid().toString();
-                            // 获取数据
-                            // characteristics.get(i).getValue()
-                            charArra[i] = MyGattAttributes.lookup(charUuid, "Unknown") + "\n" + charUuid;
-                        }
 
-                        characteristicList.add(charArra);
+                            switch (charUuid) {
+                                case COMPARA._LOCATION:
+                                    bgc_location = characteristics.get(i);
+                                    break;
+                                case COMPARA._SWITCH:
+                                    bgc_switch = characteristics.get(i);
+                                    break;
+                                case COMPARA._ALERT:
+                                    bgc_alert = characteristics.get(i);
+                                    break;
+                                case COMPARA._DEVID:
+                                    bgc_devid = characteristics.get(i);
+                                    break;
+                            }
+                        }
                     }
-                    mHandler.sendEmptyMessage(SERVICE_SHOW);
                 }
             }
         });
@@ -214,8 +258,6 @@ public class CtrlSuitActivity extends AppCompatActivity {
         mBleService.setOnConnectListener(new BleService.OnConnectionStateChangeListener() {
             @Override
             public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-                Log.i(TAG, "onReadRemoteRssi: newState = " + newState);
-
                 Message msg = new Message();
                 msg.what = _UPDATETV;
                 msg.obj = newState;
@@ -227,40 +269,65 @@ public class CtrlSuitActivity extends AppCompatActivity {
         mBleService.setOnReadRemoteRssiListener(new BleService.OnReadRemoteRssiListener() {
             @Override
             public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-                Log.i(TAG, "onReadRemoteRssi: rssi = " + rssi);
+//                Log.i(TAG, "onReadRemoteRssi: rssi = " + rssi);
             }
         });
-        mBleService.setOnDataAvailableListener(new BleService.OnDataAvailableListener(){
+        mBleService.setOnDataAvailableListener(new BleService.OnDataAvailableListener() {
 
             @Override
             public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                Log.i(TAG, "onCharacteristicRead = " + characteristic.getValue());
-
                 try {
-                    String res = new String(characteristic.getValue(),"UTF-8");
-                    Log.i(TAG, res);
+                    String res = new String(characteristic.getValue(), "UTF-8");
+
+                    switch (characteristic.getUuid().toString()) {
+                        case COMPARA._LOCATION:
+                            send2Handler(_UP_LOCATION, res);
+                            break;
+                        case COMPARA._SWITCH:
+                            send2Handler(_UP_SWITCH, res);
+                            break;
+                        case COMPARA._ALERT:
+                            send2Handler(_UP_ALERT, res);
+                            break;
+                        case COMPARA._DEVID:
+                            send2Handler(_UP_DEVID, res);
+                            break;
+                    }
+
                 } catch (UnsupportedEncodingException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
 
             @Override
             public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-                Log.i(TAG, "onCharacteristicChanged = " + characteristic.getValue());
+//                Log.i(TAG, "onCharacteristicChanged = " + characteristic.getValue());
             }
 
             @Override
             public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor characteristic, int status) {
-                Log.i(TAG, "onDescriptorRead = " + characteristic.getValue());
+//                Log.i(TAG, "onDescriptorRead = " + characteristic.getValue());
             }
         });
         mBleService.setOnReadRemoteRssiListener(new BleService.OnReadRemoteRssiListener() {
             @Override
             public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-                Log.i(TAG, "onReadRemoteRssi: rssi = " + rssi);
+//                Log.i(TAG, "onReadRemoteRssi: rssi = " + rssi);
             }
         });
+    }
+
+    /**
+     * 通知handler来更新页面
+     *
+     * @param tag
+     * @param message
+     */
+    private void send2Handler(int tag, String message) {
+        Message msg = new Message();
+        msg.what = tag;
+        msg.obj = message;
+        mHandler.sendMessage(msg);
     }
 
     /**
