@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -26,9 +27,21 @@ import com.junkchen.blelib.BleService;
 
 import net.frakbot.jumpingbeans.JumpingBeans;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static android.bluetooth.BluetoothAdapter.STATE_CONNECTING;
 import static android.bluetooth.BluetoothProfile.STATE_CONNECTED;
@@ -150,7 +163,6 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     sendCommand(k, bgc_alert);
             }
         });
-
     }
 
     private void connectble() {
@@ -203,6 +215,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     break;
                 case _UP_LOCATION:
 //                    longitude_tvid.setText(msg.obj.toString());
+//                    Log.d(TAG, msg.obj.toString());
                     break;
             }
         }
@@ -252,6 +265,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
                             switch (charUuid) {
                                 case COMPARA._LOCATION:
                                     bgc_location = characteristics.get(i);
+                                    readCharacter();
                                     break;
                                 case COMPARA._SWITCH:
                                     bgc_switch = characteristics.get(i);
@@ -297,6 +311,8 @@ public class CtrlSuitActivity extends AppCompatActivity {
                 try {
                     String res = new String(characteristic.getValue(), "UTF-8");
 
+                    Log.d(TAG, "onCharacteristicRead ---> " + res);
+
                     switch (characteristic.getUuid().toString()) {
                         case COMPARA._LOCATION:
                             send2Handler(_UP_LOCATION, res);
@@ -319,18 +335,78 @@ public class CtrlSuitActivity extends AppCompatActivity {
 
             @Override
             public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-//                Log.i(TAG, "onCharacteristicChanged = " + characteristic.getValue());
+                try {
+                    Log.d(TAG, "onCharacteristicChanged ---> " + new String(characteristic.getValue(), "UTF-8"));
+                    upData(new String(characteristic.getValue(), "UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
             public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor characteristic, int status) {
-//                Log.i(TAG, "onDescriptorRead = " + characteristic.getValue());
+                try {
+                    Log.d(TAG, "onDescriptorRead ---> " + new String(characteristic.getValue(), "UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
             }
         });
         mBleService.setOnReadRemoteRssiListener(new BleService.OnReadRemoteRssiListener() {
             @Override
             public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-//                Log.i(TAG, "onReadRemoteRssi: rssi = " + rssi);
+                Log.d(TAG, "onReadRemoteRssi ---> " + status);
+            }
+        });
+    }
+
+    /**
+     * 开启订阅和改变的监听
+     */
+    private void readCharacter(){
+        if (null != bgc_location){
+            mGatt.readCharacteristic(bgc_location);
+            mGatt.setCharacteristicNotification(bgc_location, true);
+        }
+    }
+
+    private void upData(String longitude){
+        //创建okHttpClient对象
+        OkHttpClient mOkHttpClient = new OkHttpClient();
+
+        FormBody body = new FormBody.Builder()
+                .add("device","047863A00214")
+                .add("longitude","121.362767")
+                .add("latitude","31.238190")
+                .add("latch_switch","false")
+                .add("case_lost","false")
+                .build();
+
+        //创建一个Request
+        Request request = new Request.Builder()
+                .url("http://123.56.184.37:30011/app/state/")
+                .post(body)
+                .build();
+
+        //new call
+        Call call = mOkHttpClient.newCall(request);
+
+        //请求加入调度
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d(TAG,  e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                try {
+                    JSONObject jo = new JSONObject(response.body().toString());
+                    JSONObject jos = new JSONObject(jo.getString("meta"));
+                    Log.d(TAG,  jos.getString("code"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
