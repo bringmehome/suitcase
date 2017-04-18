@@ -5,110 +5,140 @@
     android:background="@color/theme_bg"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/ble_status1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/location_btn_pad"
-        android:background="@color/white"
-        android:gravity="center"
-        android:paddingBottom="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_horizontal_margin"
-        android:text="@string/blestatus"
-        android:textSize="@dimen/font_size" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:gravity="center"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:paddingBottom="@dimen/location_pad"
         android:paddingTop="@dimen/location_pad">
 
         <ImageView
-            android:layout_width="@dimen/location_img"
-            android:layout_height="@dimen/location_img"
-            android:src="@mipmap/location" />
+            android:id="@+id/arrow_back"
+            android:layout_width="@dimen/back_icon_size"
+            android:layout_height="@dimen/back_icon_size"
+            android:src="@mipmap/arrow_back" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/ble_status1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingBottom="@dimen/location_pad"
-            android:paddingTop="@dimen/location_pad">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/longitude"
-                    android:textColor="@color/c333"
-                    android:textSize="@dimen/font_size" />
-
-                <TextView
-                    android:id="@+id/longitude_tvid"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingTop="@dimen/location_pad"
-                    android:text="@string/longitude_txt"
-                    android:textColor="@color/c666" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/latitude"
-                    android:textColor="@color/c333"
-                    android:textSize="@dimen/font_size" />
-
-                <TextView
-                    android:id="@+id/latitude_tvid"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingTop="@dimen/location_pad"
-                    android:text="@string/longitude_txt"
-                    android:textColor="@color/c666" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:gravity="center"
-            android:paddingBottom="@dimen/location_pad"
-            android:paddingTop="@dimen/location_pad">
+            android:text="@string/blestatus"
+            android:textColor="@color/c333"
+            android:textSize="@dimen/font_size" />
 
-            <TextView
-                android:id="@+id/update_loc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/theme_c"
-                android:padding="@dimen/location_pad"
-                android:text="@string/updatelocation"
-                android:textColor="@color/white"
-                android:textSize="@dimen/btn_font_size" />
-
-        </LinearLayout>
+        <ImageView
+            android:layout_width="@dimen/back_icon_size"
+            android:layout_height="@dimen/back_icon_size" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/location_btn_pad"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/banner_img_size"
+            android:src="@mipmap/con_banner" />
+    </LinearLayout>
+
+
+    <!--<LinearLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:background="@color/white"-->
+    <!--android:gravity="center"-->
+    <!--android:orientation="vertical"-->
+    <!--android:paddingBottom="@dimen/location_pad"-->
+    <!--android:paddingTop="@dimen/location_pad">-->
+
+    <!--<ImageView-->
+    <!--android:layout_width="@dimen/location_img"-->
+    <!--android:layout_height="@dimen/location_img"-->
+    <!--android:src="@mipmap/location" />-->
+
+    <!--<LinearLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:orientation="horizontal"-->
+    <!--android:paddingBottom="@dimen/location_pad"-->
+    <!--android:paddingTop="@dimen/location_pad">-->
+
+    <!--<LinearLayout-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_weight="1"-->
+    <!--android:gravity="center"-->
+    <!--android:orientation="vertical">-->
+
+    <!--<TextView-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="@string/longitude"-->
+    <!--android:textColor="@color/c333"-->
+    <!--android:textSize="@dimen/font_size" />-->
+
+    <!--<TextView-->
+    <!--android:id="@+id/longitude_tvid"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:paddingTop="@dimen/location_pad"-->
+    <!--android:text="@string/longitude_txt"-->
+    <!--android:textColor="@color/c666" />-->
+    <!--</LinearLayout>-->
+
+    <!--<LinearLayout-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_weight="1"-->
+    <!--android:gravity="center"-->
+    <!--android:orientation="vertical">-->
+
+    <!--<TextView-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="@string/latitude"-->
+    <!--android:textColor="@color/c333"-->
+    <!--android:textSize="@dimen/font_size" />-->
+
+    <!--<TextView-->
+    <!--android:id="@+id/latitude_tvid"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:paddingTop="@dimen/location_pad"-->
+    <!--android:text="@string/longitude_txt"-->
+    <!--android:textColor="@color/c666" />-->
+    <!--</LinearLayout>-->
+    <!--</LinearLayout>-->
+
+    <!--<LinearLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:gravity="center"-->
+    <!--android:paddingBottom="@dimen/location_pad"-->
+    <!--android:paddingTop="@dimen/location_pad">-->
+
+    <!--<TextView-->
+    <!--android:id="@+id/update_loc"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:background="@color/theme_c"-->
+    <!--android:padding="@dimen/location_pad"-->
+    <!--android:text="@string/updatelocation"-->
+    <!--android:textColor="@color/white"-->
+    <!--android:textSize="@dimen/btn_font_size" />-->
+
+    <!--</LinearLayout>-->
+    <!--</LinearLayout>-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:background="@color/white"
         android:orientation="horizontal"
         android:padding="@dimen/activity_vertical_margin">
@@ -148,5 +178,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/location_pad"
+        android:padding="@dimen/activity_vertical_margin"
+        android:textColor="@color/c999"
+        android:text="@string/suit_des"/>
 
 </LinearLayout>

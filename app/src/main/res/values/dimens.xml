@@ -7,6 +7,10 @@
     <dimen name="location_pad">10dp</dimen>
     <dimen name="location_btn_pad">5dp</dimen>
 
-    <dimen name="font_size">20dp</dimen>
+    <dimen name="font_size">16dp</dimen>
     <dimen name="btn_font_size">16dp</dimen>
+    <dimen name="min_font_size">12dp</dimen>
+
+    <dimen name="banner_img_size">180dp</dimen>
+    <dimen name="back_icon_size">30dp</dimen>
 </resources>

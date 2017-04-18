@@ -16,10 +16,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.fog.suitcase.R;
 import com.fog.suitcase.adapter.CommonAdapter;
 import com.fog.suitcase.adapter.ViewHolder;
+
+import net.frakbot.jumpingbeans.JumpingBeans;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,6 +87,16 @@ public class BleListActivity extends AppCompatActivity {
         });
 
         mSwipeLayout.setColorSchemeResources(R.color.colorAccent);
+
+        jumping();
+    }
+
+    // 扫描中动画
+    private void jumping() {
+        TextView scaning_txt = (TextView) findViewById(R.id.scaning_txt);
+        JumpingBeans.with(scaning_txt)
+                .appendJumpingDots()
+                .build();
     }
 
     /**
@@ -129,7 +142,7 @@ public class BleListActivity extends AppCompatActivity {
         scanner.startScan(leCallback);
     }
 
-    private void stopScanLeDevice(){
+    private void stopScanLeDevice() {
         scanner.stopScan(leCallback);
     }
 
@@ -142,7 +155,7 @@ public class BleListActivity extends AppCompatActivity {
                 if (!devices.contains(device)) {  //判断是否已经添加
                     devices.add(device);
 
-                    if(device.getName() != null){
+                    if (device.getName() != null) {
                         String tmpDevName = device.getName();
 //                        String tmpDevName = device.getName() != null ? device.getName() : "Unknow";
                         String tmpDevAddress = device.getAddress();

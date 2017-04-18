@@ -15,7 +15,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.CharacteristicActivity"></activity>
         <!--<activity android:name="com.fog.suitcase.activity.BleInfoActivity"></activity>-->
         <activity android:name="com.fog.suitcase.activity.CtrlSuitActivity"></activity>
     </application>

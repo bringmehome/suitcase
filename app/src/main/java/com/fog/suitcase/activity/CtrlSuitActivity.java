@@ -15,6 +15,7 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,6 +23,8 @@ import android.widget.Toast;
 import com.fog.suitcase.R;
 import com.fog.suitcase.helper.COMPARA;
 import com.junkchen.blelib.BleService;
+
+import net.frakbot.jumpingbeans.JumpingBeans;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -54,9 +57,10 @@ public class CtrlSuitActivity extends AppCompatActivity {
     private boolean mIsBind;//是否已经绑定
 
     private TextView ble_status;
-    private TextView update_loc;
-    private TextView longitude_tvid;
-    private TextView latitude_tvid;
+    private ImageView arrow_back;
+//    private TextView update_loc;
+//    private TextView longitude_tvid;
+//    private TextView latitude_tvid;
     private Switch lock_switch;
     private Switch lock_alert;
 
@@ -90,22 +94,30 @@ public class CtrlSuitActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        update_loc = (TextView) findViewById(R.id.update_loc);
+//        update_loc = (TextView) findViewById(R.id.update_loc);
         ble_status = (TextView) findViewById(R.id.ble_status1);
 
-        longitude_tvid = (TextView) findViewById(R.id.longitude_tvid);
-        latitude_tvid = (TextView) findViewById(R.id.latitude_tvid);
+//        longitude_tvid = (TextView) findViewById(R.id.longitude_tvid);
+//        latitude_tvid = (TextView) findViewById(R.id.latitude_tvid);
+        arrow_back = (ImageView) findViewById(R.id.arrow_back);
         lock_switch = (Switch) findViewById(R.id.lock_switch);
         lock_alert = (Switch) findViewById(R.id.lock_alert);
 
 
         characteristicList = new ArrayList<>();
 
-        update_loc.setOnClickListener(new View.OnClickListener() {
+//        update_loc.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (null != bgc_location)
+//                    mGatt.readCharacteristic(bgc_location);
+//            }
+//        });
+
+        arrow_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (null != bgc_location)
-                    mGatt.readCharacteristic(bgc_location);
+                finish();
             }
         });
 
@@ -138,6 +150,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     sendCommand(k, bgc_alert);
             }
         });
+
     }
 
     private void connectble() {
@@ -189,7 +202,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
                         connectble();
                     break;
                 case _UP_LOCATION:
-                    longitude_tvid.setText(msg.obj.toString());
+//                    longitude_tvid.setText(msg.obj.toString());
                     break;
             }
         }
@@ -341,6 +354,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
     private void doBindService() {
         Intent serviceIntent = new Intent(this, BleService.class);
         bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        mIsBind = true;
     }
 
     /**
@@ -349,6 +363,8 @@ public class CtrlSuitActivity extends AppCompatActivity {
     private void doUnBindService() {
         if (mIsBind) {
             unbindService(serviceConnection);
+            mBleService.disconnect();
+
             mBleService = null;
             mIsBind = false;
         }
@@ -358,6 +374,5 @@ public class CtrlSuitActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         doUnBindService();
-        mBleService.disconnect();
     }
 }
