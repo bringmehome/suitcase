@@ -6,7 +6,7 @@ package com.fog.suitcase.Beans;
 
 public class Meta {
     public int code;
-    public String message;
+//    public String message;
 
     public int getCode() {
         return code;
@@ -16,11 +16,11 @@ public class Meta {
         this.code = code;
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
+//    public String getMessage() {
+//        return message;
+//    }
+//
+//    public void setMessage(String message) {
+//        this.message = message;
+//    }
 }

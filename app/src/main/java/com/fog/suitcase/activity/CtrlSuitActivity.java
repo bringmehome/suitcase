@@ -27,16 +27,10 @@ import com.fog.suitcase.helper.COMPARA;
 import com.google.gson.Gson;
 import com.junkchen.blelib.BleService;
 
-import net.frakbot.jumpingbeans.JumpingBeans;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -73,7 +67,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
 
     private TextView ble_status;
     private ImageView arrow_back;
-//    private TextView update_loc;
+    //    private TextView update_loc;
 //    private TextView longitude_tvid;
 //    private TextView latitude_tvid;
     private Switch lock_switch;
@@ -87,10 +81,17 @@ public class CtrlSuitActivity extends AppCompatActivity {
     private BluetoothGatt mGatt;
 
     // 各种服务的UUID
-    private BluetoothGattCharacteristic bgc_location = null;
+    private BluetoothGattCharacteristic bgc_longitude = null;
+    private BluetoothGattCharacteristic bgc_latitude = null;
     private BluetoothGattCharacteristic bgc_switch = null;
     private BluetoothGattCharacteristic bgc_alert = null;
     private BluetoothGattCharacteristic bgc_devid = null;
+
+    private String _LONGITUDE_TMP = "";
+    private String _LATITUDE_TMP = "";
+    private String _LATCH_SWITCH_TMP = "false";
+    private String _CASE_LOST_TMP = "false";
+    private String _DEVICE_TMP = "047863A00214";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +104,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
 
         Intent i = getIntent();
         mac = i.getStringExtra("mac");
+//        _DEVICE_TMP = mac.replace(":", "");
 
         // 绑定服务
         doBindService();
@@ -117,7 +119,6 @@ public class CtrlSuitActivity extends AppCompatActivity {
         arrow_back = (ImageView) findViewById(R.id.arrow_back);
         lock_switch = (Switch) findViewById(R.id.lock_switch);
         lock_alert = (Switch) findViewById(R.id.lock_alert);
-
 
         characteristicList = new ArrayList<>();
 
@@ -265,8 +266,12 @@ public class CtrlSuitActivity extends AppCompatActivity {
                             String charUuid = characteristics.get(i).getUuid().toString();
 
                             switch (charUuid) {
-                                case COMPARA._LOCATION:
-                                    bgc_location = characteristics.get(i);
+                                case COMPARA._LONGITUDE:
+                                    bgc_longitude = characteristics.get(i);
+                                    readCharacter();
+                                    break;
+                                case COMPARA._LATITUDE:
+                                    bgc_latitude = characteristics.get(i);
                                     readCharacter();
                                     break;
                                 case COMPARA._SWITCH:
@@ -306,6 +311,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
 //                Log.i(TAG, "onReadRemoteRssi: rssi = " + rssi);
             }
         });
+
         mBleService.setOnDataAvailableListener(new BleService.OnDataAvailableListener() {
 
             @Override
@@ -316,7 +322,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     Log.d(TAG, "onCharacteristicRead ---> " + res);
 
                     switch (characteristic.getUuid().toString()) {
-                        case COMPARA._LOCATION:
+                        case COMPARA._LONGITUDE:
                             send2Handler(_UP_LOCATION, res);
                             break;
                         case COMPARA._SWITCH:
@@ -338,8 +344,22 @@ public class CtrlSuitActivity extends AppCompatActivity {
             @Override
             public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
                 try {
-                    Log.d(TAG, "onCharacteristicChanged ---> " + new String(characteristic.getValue(), "UTF-8"));
-                    upData(new String(characteristic.getValue(), "UTF-8"));
+                    Log.d(TAG, "onCharacteristicChanged ---> " + characteristic.getUuid().toString().equals(COMPARA._LONGITUDE) + " === ");
+                    switch (characteristic.getUuid().toString()) {
+                        case COMPARA._LONGITUDE:
+                            _LONGITUDE_TMP = new String(characteristic.getValue(), "UTF-8");
+                            break;
+                        case COMPARA._LATITUDE:
+                            _LATITUDE_TMP = new String(characteristic.getValue(), "UTF-8");
+                            break;
+                        case COMPARA._SWITCH:
+                            _LATCH_SWITCH_TMP = new String(characteristic.getValue(), "UTF-8");
+                            break;
+                        case COMPARA._DEVID:
+                            _DEVICE_TMP = new String(characteristic.getValue(), "UTF-8");
+                            break;
+                    }
+                    upData();
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
@@ -354,6 +374,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
                 }
             }
         });
+
         mBleService.setOnReadRemoteRssiListener(new BleService.OnReadRemoteRssiListener() {
             @Override
             public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
@@ -365,28 +386,40 @@ public class CtrlSuitActivity extends AppCompatActivity {
     /**
      * 开启订阅和改变的监听
      */
-    private void readCharacter(){
-        if (null != bgc_location){
-            mGatt.readCharacteristic(bgc_location);
-            mGatt.setCharacteristicNotification(bgc_location, true);
+    private void readCharacter() {
+        if (null != bgc_longitude) {
+            mGatt.readCharacteristic(bgc_longitude);
+            mGatt.setCharacteristicNotification(bgc_longitude, true);
+        }
+        if (null != bgc_latitude) {
+            mGatt.readCharacteristic(bgc_latitude);
+            mGatt.setCharacteristicNotification(bgc_latitude, true);
+        }
+        if (null != bgc_switch) {
+            mGatt.readCharacteristic(bgc_switch);
+            mGatt.setCharacteristicNotification(bgc_switch, true);
+        }
+        if (null != bgc_alert) {
+            mGatt.readCharacteristic(bgc_alert);
+            mGatt.setCharacteristicNotification(bgc_alert, true);
         }
     }
 
-    private void upData(String longitude){
+    private void upData() {
         //创建okHttpClient对象
         OkHttpClient mOkHttpClient = new OkHttpClient();
 
         FormBody body = new FormBody.Builder()
-                .add("device","047863A00214")
-                .add("longitude","121.362767")
-                .add("latitude","31.238190")
-                .add("latch_switch","false")
-                .add("case_lost","false")
+                .add("device", _DEVICE_TMP)
+                .add("longitude", _LONGITUDE_TMP)
+                .add("latitude", _LATITUDE_TMP)
+                .add("latch_switch", _LATCH_SWITCH_TMP)
+                .add("case_lost", _CASE_LOST_TMP)
                 .build();
 
         //创建一个Request
         Request request = new Request.Builder()
-                .url("http://123.56.184.37:30011/app/state/")
+                .url(COMPARA._HOST)
                 .post(body)
                 .build();
 
@@ -397,30 +430,37 @@ public class CtrlSuitActivity extends AppCompatActivity {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.d(TAG,  e.getMessage());
+                Log.d(TAG, e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                String htmlStr =  response.body().string();
-                if(htmlStr.indexOf("code") > -1){
-                    if(0 == getResCode(htmlStr)){
-                        Log.d(TAG,  "gson -- success -- " + htmlStr);
+                String htmlStr = response.body().string();
+                Log.d(TAG, "gson -- htmlStr -- " + htmlStr);
+
+                if (htmlStr.indexOf("code") > -1) {
+                    if (0 == getResCode(htmlStr)) {
+                        Log.d(TAG, "gson -- success");
                     }
                 }
             }
         });
     }
 
-    private int getResCode(String message){
+    private int getResCode(String message) {
 
         Gson gson = new Gson();
-        AppStateBean asb = gson.fromJson(message, AppStateBean.class);
+        AppStateBean asb = null;
+        try {
+            asb = gson.fromJson(message, AppStateBean.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 //        Log.d(TAG, asb.getMeta().getMessage());
 //        Log.d(TAG, asb.getMeta().getCode() +"");
 //        Log.d(TAG, asb.getData().getDevice());
 
-        return asb.getMeta().getCode();
+        return null != asb ? 1 : asb.getMeta().getCode();
     }
 
     /**

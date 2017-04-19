@@ -6,7 +6,7 @@ package com.fog.suitcase.Beans;
 
 public class AppStateBean {
     public Meta meta;
-    public Data data;
+//    public Data data;
 
     public Meta getMeta() {
         return meta;
@@ -16,11 +16,11 @@ public class AppStateBean {
         this.meta = meta;
     }
 
-    public Data getData() {
-        return data;
-    }
-
-    public void setData(Data data) {
-        this.data = data;
-    }
+//    public Data getData() {
+//        return data;
+//    }
+//
+//    public void setData(Data data) {
+//        this.data = data;
+//    }
 }
