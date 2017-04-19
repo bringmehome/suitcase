@@ -21,8 +21,10 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fog.suitcase.Beans.AppStateBean;
 import com.fog.suitcase.R;
 import com.fog.suitcase.helper.COMPARA;
+import com.google.gson.Gson;
 import com.junkchen.blelib.BleService;
 
 import net.frakbot.jumpingbeans.JumpingBeans;
@@ -400,15 +402,25 @@ public class CtrlSuitActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                try {
-                    JSONObject jo = new JSONObject(response.body().toString());
-                    JSONObject jos = new JSONObject(jo.getString("meta"));
-                    Log.d(TAG,  jos.getString("code"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                String htmlStr =  response.body().string();
+                if(htmlStr.indexOf("code") > -1){
+                    if(0 == getResCode(htmlStr)){
+                        Log.d(TAG,  "gson -- success -- " + htmlStr);
+                    }
                 }
             }
         });
+    }
+
+    private int getResCode(String message){
+
+        Gson gson = new Gson();
+        AppStateBean asb = gson.fromJson(message, AppStateBean.class);
+//        Log.d(TAG, asb.getMeta().getMessage());
+//        Log.d(TAG, asb.getMeta().getCode() +"");
+//        Log.d(TAG, asb.getData().getDevice());
+
+        return asb.getMeta().getCode();
     }
 
     /**
