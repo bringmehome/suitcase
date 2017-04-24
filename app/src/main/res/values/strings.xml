@@ -19,5 +19,6 @@
     <string name="longitude">经度</string>
     <string name="longitude_txt">104.480</string>
     <string name="latitude">纬度</string>
+    <string name="deviceid">设备ID</string>
 
 </resources>

@@ -53,7 +53,8 @@ public class CtrlSuitActivity extends AppCompatActivity {
     public static final int _UPDATETV = 2;
 
     // 更新经纬度
-    public static final int _UP_LOCATION = 4;
+    public static final int _UP_LONG = 4;
+    public static final int _UP_LATI = 8;
     public static final int _UP_SWITCH = 5;
     public static final int _UP_ALERT = 6;
     public static final int _UP_DEVID = 7;
@@ -68,8 +69,9 @@ public class CtrlSuitActivity extends AppCompatActivity {
     private TextView ble_status;
     private ImageView arrow_back;
     //    private TextView update_loc;
-//    private TextView longitude_tvid;
-//    private TextView latitude_tvid;
+    private TextView longitude_tvid;
+    private TextView latitude_tvid;
+    private TextView deviceid_tvid;
     private Switch lock_switch;
     private Switch lock_alert;
 
@@ -104,7 +106,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
 
         Intent i = getIntent();
         mac = i.getStringExtra("mac");
-//        _DEVICE_TMP = mac.replace(":", "");
+        _DEVICE_TMP = mac.replace(":", "");
 
         // 绑定服务
         doBindService();
@@ -114,8 +116,9 @@ public class CtrlSuitActivity extends AppCompatActivity {
 //        update_loc = (TextView) findViewById(R.id.update_loc);
         ble_status = (TextView) findViewById(R.id.ble_status1);
 
-//        longitude_tvid = (TextView) findViewById(R.id.longitude_tvid);
-//        latitude_tvid = (TextView) findViewById(R.id.latitude_tvid);
+        deviceid_tvid = (TextView) findViewById(R.id.deviceid_tvid);
+        longitude_tvid = (TextView) findViewById(R.id.longitude_tvid);
+        latitude_tvid = (TextView) findViewById(R.id.latitude_tvid);
         arrow_back = (ImageView) findViewById(R.id.arrow_back);
         lock_switch = (Switch) findViewById(R.id.lock_switch);
         lock_alert = (Switch) findViewById(R.id.lock_alert);
@@ -166,6 +169,8 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     sendCommand(k, bgc_alert);
             }
         });
+
+        deviceid_tvid.setText(_DEVICE_TMP);
     }
 
     private void connectble() {
@@ -216,9 +221,11 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     if (msg.obj.toString().equals("0"))
                         connectble();
                     break;
-                case _UP_LOCATION:
-//                    longitude_tvid.setText(msg.obj.toString());
-//                    Log.d(TAG, msg.obj.toString());
+                case _UP_LONG:
+                    longitude_tvid.setText(msg.obj.toString());
+                    break;
+                case _UP_LATI:
+                    latitude_tvid.setText(msg.obj.toString());
                     break;
             }
         }
@@ -322,9 +329,9 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     Log.d(TAG, "onCharacteristicRead ---> " + res);
 
                     switch (characteristic.getUuid().toString()) {
-                        case COMPARA._LONGITUDE:
-                            send2Handler(_UP_LOCATION, res);
-                            break;
+//                        case COMPARA._LONGITUDE:
+//                            send2Handler(_UP_LOCATION, res);
+//                            break;
                         case COMPARA._SWITCH:
                             send2Handler(_UP_SWITCH, res);
                             break;
@@ -348,9 +355,11 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     switch (characteristic.getUuid().toString()) {
                         case COMPARA._LONGITUDE:
                             _LONGITUDE_TMP = new String(characteristic.getValue(), "UTF-8");
+                            send2Handler(_UP_LONG, _LONGITUDE_TMP);
                             break;
                         case COMPARA._LATITUDE:
                             _LATITUDE_TMP = new String(characteristic.getValue(), "UTF-8");
+                            send2Handler(_UP_LATI, _LATITUDE_TMP);
                             break;
                         case COMPARA._SWITCH:
                             _LATCH_SWITCH_TMP = new String(characteristic.getValue(), "UTF-8");
