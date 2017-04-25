@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -58,6 +59,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
     public static final int _UP_SWITCH = 5;
     public static final int _UP_ALERT = 6;
     public static final int _UP_DEVID = 7;
+    public static final int _GET_STATE = 9;
 
     private Context context;
 
@@ -71,6 +73,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
     //    private TextView update_loc;
     private TextView longitude_tvid;
     private TextView latitude_tvid;
+    private TextView devstate_tvid;
     private TextView deviceid_tvid;
     private Switch lock_switch;
     private Switch lock_alert;
@@ -95,6 +98,11 @@ public class CtrlSuitActivity extends AppCompatActivity {
     private String _CASE_LOST_TMP = "false";
     private String _DEVICE_TMP = "047863A00214";
 
+    private boolean isBLEConnect = false;
+    //创建okHttpClient对象
+    private OkHttpClient mOkHttpClient;
+    private Handler getHandler = new Handler();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,12 +112,11 @@ public class CtrlSuitActivity extends AppCompatActivity {
 
         initView();
 
-        Intent i = getIntent();
-        mac = i.getStringExtra("mac");
-        _DEVICE_TMP = mac.replace(":", "");
-
         // 绑定服务
         doBindService();
+
+        // 通过Handler启动线程
+        getHandler.post(mRunnable);  //发送消息，启动线程运行
     }
 
     private void initView() {
@@ -119,6 +126,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
         deviceid_tvid = (TextView) findViewById(R.id.deviceid_tvid);
         longitude_tvid = (TextView) findViewById(R.id.longitude_tvid);
         latitude_tvid = (TextView) findViewById(R.id.latitude_tvid);
+        devstate_tvid = (TextView) findViewById(R.id.devstate_tvid);
         arrow_back = (ImageView) findViewById(R.id.arrow_back);
         lock_switch = (Switch) findViewById(R.id.lock_switch);
         lock_alert = (Switch) findViewById(R.id.lock_alert);
@@ -144,14 +152,28 @@ public class CtrlSuitActivity extends AppCompatActivity {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                byte[] k;
-                if (isChecked) {
-                    k = new byte[]{0x01};
+
+                if (!isBLEConnect) {
+                    String k = "false";
+                    if (isChecked) {
+                        k = "true";
+                    }
+                    FormBody body = new FormBody.Builder()
+                            .add("device", _DEVICE_TMP)
+                            .add("latch_switch", k)
+                            .build();
+                    sendCloudCmd(body);
                 } else {
-                    k = new byte[]{0x00};
+                    byte[] k;
+                    if (isChecked) {
+                        k = new byte[]{0x01};
+                    } else {
+                        k = new byte[]{0x00};
+                    }
+                    if (null != bgc_switch)
+                        sendCommand(k, bgc_switch);
                 }
-                if (null != bgc_switch)
-                    sendCommand(k, bgc_switch);
+
             }
         });
 
@@ -170,6 +192,10 @@ public class CtrlSuitActivity extends AppCompatActivity {
             }
         });
 
+
+        Intent i = getIntent();
+        mac = i.getStringExtra("mac");
+        _DEVICE_TMP = mac.replace(":", "");
         deviceid_tvid.setText(_DEVICE_TMP);
     }
 
@@ -227,6 +253,9 @@ public class CtrlSuitActivity extends AppCompatActivity {
                 case _UP_LATI:
                     latitude_tvid.setText(msg.obj.toString());
                     break;
+                case _GET_STATE:
+                    devstate_tvid.setText(msg.obj.toString().equals("false") ? R.string.cast_unlost : R.string.cast_lost);
+                    break;
             }
         }
     };
@@ -247,9 +276,11 @@ public class CtrlSuitActivity extends AppCompatActivity {
                         ble_status.setText(R.string.connecting);
                     }
                 }, 2000);
+                isBLEConnect = false;
                 break;
             case STATE_CONNECTED:
                 status = R.string.state_connected;
+                isBLEConnect = true;
                 break;
             case STATE_CONNECTING:
                 status = R.string.connecting;
@@ -415,8 +446,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
     }
 
     private void upData() {
-        //创建okHttpClient对象
-        OkHttpClient mOkHttpClient = new OkHttpClient();
+        mOkHttpClient = new OkHttpClient();
 
         FormBody body = new FormBody.Builder()
                 .add("device", _DEVICE_TMP)
@@ -428,7 +458,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
 
         //创建一个Request
         Request request = new Request.Builder()
-                .url(COMPARA._HOST)
+                .url(COMPARA._STATE_HOST)
                 .post(body)
                 .build();
 
@@ -456,6 +486,77 @@ public class CtrlSuitActivity extends AppCompatActivity {
         });
     }
 
+    private void sendCloudCmd(FormBody body) {
+        //创建okHttpClient对象
+        mOkHttpClient = new OkHttpClient();
+
+        //创建一个Request
+        Request request = new Request.Builder()
+                .url(COMPARA._CMD_HOST)
+                .post(body)
+                .build();
+
+        //new call
+        Call call = mOkHttpClient.newCall(request);
+
+        //请求加入调度
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d(TAG, e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String htmlStr = response.body().string();
+                Log.d(TAG, "gson -- htmlStr -- " + htmlStr);
+
+                if (htmlStr.indexOf("code") > -1) {
+                    if (0 == getResCode(htmlStr)) {
+                        Log.d(TAG, "gson -- success");
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * 获取设备状态
+     */
+    private void getStates() {
+        //创建okHttpClient对象
+        mOkHttpClient = new OkHttpClient();
+
+        //创建一个Request
+        Request request = new Request.Builder()
+                .url(COMPARA._GET_STATE_HOST + "?device=" + _DEVICE_TMP)
+                .get()
+                .build();
+
+        //new call
+        Call call = mOkHttpClient.newCall(request);
+
+        //请求加入调度
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d(TAG, e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String htmlStr = response.body().string();
+                Log.d(TAG, "get -- state -- " + htmlStr);
+                if (htmlStr.indexOf("code") > -1) {
+                    if (0 == getResCode(htmlStr)) {
+                        Log.d(TAG, "state -- success -- " + getCastLost(htmlStr));
+                        send2Handler(_GET_STATE, getCastLost(htmlStr));
+                    }
+                }
+            }
+        });
+    }
+
     private int getResCode(String message) {
 
         Gson gson = new Gson();
@@ -469,7 +570,23 @@ public class CtrlSuitActivity extends AppCompatActivity {
 //        Log.d(TAG, asb.getMeta().getCode() +"");
 //        Log.d(TAG, asb.getData().getDevice());
 
-        return null != asb ? 1 : asb.getMeta().getCode();
+        return null == asb ? 1 : asb.getMeta().getCode();
+    }
+
+    private String getCastLost(String message) {
+
+        Gson gson = new Gson();
+        AppStateBean asb = null;
+        try {
+            asb = gson.fromJson(message, AppStateBean.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        Log.d(TAG, asb.getMeta().getMessage());
+//        Log.d(TAG, asb.getMeta().getCode() +"");
+//        Log.d(TAG, asb.getData().getDevice());
+
+        return null == asb ? "false" : asb.getData().getCase_lost();
     }
 
     /**
@@ -484,6 +601,14 @@ public class CtrlSuitActivity extends AppCompatActivity {
         msg.obj = message;
         mHandler.sendMessage(msg);
     }
+
+    private Runnable mRunnable = new Runnable() {
+        public void run() {
+            // 每3秒执行一次
+            getStates();
+            getHandler.postDelayed(mRunnable, 5000);  //给自己发送消息，自运行
+        }
+    };
 
     /**
      * 绑定服务
@@ -511,5 +636,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         doUnBindService();
+        //将线程销毁掉
+        getHandler.removeCallbacks(mRunnable);
     }
 }

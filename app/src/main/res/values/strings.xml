@@ -20,5 +20,9 @@
     <string name="longitude_txt">104.480</string>
     <string name="latitude">纬度</string>
     <string name="deviceid">设备ID</string>
+    <string name="devicestate">设备状态</string>
+
+    <string name="cast_unlost">正常</string>
+    <string name="cast_lost">丢失</string>
 
 </resources>

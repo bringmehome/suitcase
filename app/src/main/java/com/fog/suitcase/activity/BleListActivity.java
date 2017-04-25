@@ -6,7 +6,10 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by SIN on 2017/4/11.
@@ -58,6 +62,8 @@ public class BleListActivity extends AppCompatActivity {
 
         // 初始化界面
         initView();
+        listenBLEchange();
+
         initAdapter();
         scanLeDevice();
     }
@@ -130,16 +136,19 @@ public class BleListActivity extends AppCompatActivity {
         serviceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, serviceList);
     }
 
+    BluetoothAdapter bluetoothAdapter;
     private void scanLeDevice() {
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);//这里与标准蓝牙略有不同
-        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+        bluetoothAdapter = bluetoothManager.getAdapter();
 
         /*隐式打开蓝牙*/
         if (!bluetoothAdapter.isEnabled()) {
-            bluetoothAdapter.enable();
+            startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), 0);  // 弹对话框的形式提示用户开启蓝牙
+//            bluetoothAdapter.enable();// 强制开启，不推荐使用
+        }else{
+            scanner = bluetoothAdapter.getBluetoothLeScanner();
+            scanner.startScan(leCallback);
         }
-        scanner = bluetoothAdapter.getBluetoothLeScanner();
-        scanner.startScan(leCallback);
     }
 
     private void stopScanLeDevice() {
@@ -174,6 +183,32 @@ public class BleListActivity extends AppCompatActivity {
         public void onScanFailed(int errorCode) {
             super.onScanFailed(errorCode);
             Log.e("搜索失败", "");
+        }
+    };
+
+    /**
+     * 监听蓝牙的变化
+     */
+    private void listenBLEchange() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(broadcastReceiver, intentFilter);
+    }
+
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) { // 蓝牙开关发生变化
+                // 这里可以直接使用mBluetoothAdapter.isEnabled()来判断当前蓝牙状态
+                scanner = bluetoothAdapter.getBluetoothLeScanner();
+                try{
+                    if(null != scanner)
+                        scanner.startScan(leCallback);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
         }
     };
 }

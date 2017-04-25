@@ -12,8 +12,8 @@ public class Data {
     public String port;
     public String longitude;
     public String latitude;
-    public boolean latch_switch;
-    public boolean case_lost;
+    public String latch_switch;
+    public String case_lost;
     public String note;
 
     public String getDevice() {
@@ -72,19 +72,19 @@ public class Data {
         this.latitude = latitude;
     }
 
-    public boolean isLatch_switch() {
+    public String getLatch_switch() {
         return latch_switch;
     }
 
-    public void setLatch_switch(boolean latch_switch) {
+    public void setLatch_switch(String latch_switch) {
         this.latch_switch = latch_switch;
     }
 
-    public boolean isCase_lost() {
+    public String getCase_lost() {
         return case_lost;
     }
 
-    public void setCase_lost(boolean case_lost) {
+    public void setCase_lost(String case_lost) {
         this.case_lost = case_lost;
     }
 
