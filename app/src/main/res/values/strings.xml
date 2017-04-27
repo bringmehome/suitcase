@@ -17,7 +17,7 @@
 
     <string name="updatelocation">更新经纬度</string>
     <string name="longitude">经度</string>
-    <string name="longitude_txt">104.480</string>
+    <string name="longitude_txt">位置获取中</string>
     <string name="latitude">纬度</string>
     <string name="deviceid">设备ID</string>
     <string name="devicestate">设备状态</string>

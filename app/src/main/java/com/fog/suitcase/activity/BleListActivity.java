@@ -1,5 +1,6 @@
 package com.fog.suitcase.activity;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -10,9 +11,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -20,6 +24,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fog.suitcase.R;
 import com.fog.suitcase.adapter.CommonAdapter;
@@ -137,15 +142,33 @@ public class BleListActivity extends AppCompatActivity {
     }
 
     BluetoothAdapter bluetoothAdapter;
+    private static final int REQUEST_CODE_ACCESS_COARSE_LOCATION = 1;
+
     private void scanLeDevice() {
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);//这里与标准蓝牙略有不同
         bluetoothAdapter = bluetoothManager.getAdapter();
+
+        /**
+         * 打开位置权限
+         */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//如果 API level 是大于等于 23(Android 6.0) 时
+            //判断是否具有权限
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                //判断是否需要向用户解释为什么需要申请该权限
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                    Toast.makeText(BleListActivity.this, "自Android 6.0开始需要打开位置权限才可以搜索到Ble设备", Toast.LENGTH_SHORT).show();
+                }
+                //请求权限
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE_ACCESS_COARSE_LOCATION);
+            }
+        }
+
 
         /*隐式打开蓝牙*/
         if (!bluetoothAdapter.isEnabled()) {
             startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), 0);  // 弹对话框的形式提示用户开启蓝牙
 //            bluetoothAdapter.enable();// 强制开启，不推荐使用
-        }else{
+        } else {
             scanner = bluetoothAdapter.getBluetoothLeScanner();
             scanner.startScan(leCallback);
         }
@@ -202,10 +225,10 @@ public class BleListActivity extends AppCompatActivity {
             if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) { // 蓝牙开关发生变化
                 // 这里可以直接使用mBluetoothAdapter.isEnabled()来判断当前蓝牙状态
                 scanner = bluetoothAdapter.getBluetoothLeScanner();
-                try{
-                    if(null != scanner)
+                try {
+                    if (null != scanner)
                         scanner.startScan(leCallback);
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

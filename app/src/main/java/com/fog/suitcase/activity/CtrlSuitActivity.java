@@ -254,7 +254,11 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     latitude_tvid.setText(msg.obj.toString());
                     break;
                 case _GET_STATE:
-                    devstate_tvid.setText(msg.obj.toString().equals("false") ? R.string.cast_unlost : R.string.cast_lost);
+                    if (!isBLEConnect) {
+                        devstate_tvid.setText(msg.obj.toString().equals("false") ? R.string.cast_unlost : R.string.cast_lost);
+                    }else{
+                        devstate_tvid.setText(R.string.cast_unlost);
+                    }
                     break;
             }
         }
