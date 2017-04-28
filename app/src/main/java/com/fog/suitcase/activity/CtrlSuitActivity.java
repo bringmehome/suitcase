@@ -11,13 +11,13 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -77,6 +77,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
     private TextView deviceid_tvid;
     private Switch lock_switch;
     private Switch lock_alert;
+    private LinearLayout lock_layout;
 
     /**
      * 蓝牙服务的列表
@@ -98,7 +99,12 @@ public class CtrlSuitActivity extends AppCompatActivity {
     private String _CASE_LOST_TMP = "false";
     private String _DEVICE_TMP = "047863A00214";
 
+    // 蓝牙是否连接上
     private boolean isBLEConnect = false;
+
+    // 是否布防
+    private boolean _ISLOCK = false;
+
     //创建okHttpClient对象
     private OkHttpClient mOkHttpClient;
     private Handler getHandler = new Handler();
@@ -130,6 +136,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
         arrow_back = (ImageView) findViewById(R.id.arrow_back);
         lock_switch = (Switch) findViewById(R.id.lock_switch);
         lock_alert = (Switch) findViewById(R.id.lock_alert);
+        lock_layout = (LinearLayout) findViewById(R.id.lock_layout);
 
         characteristicList = new ArrayList<>();
 
@@ -184,14 +191,20 @@ public class CtrlSuitActivity extends AppCompatActivity {
                 byte[] k;
                 if (isChecked) {
                     k = new byte[]{0x01};
+
+                    _ISLOCK = true;
+
+                    lock_layout.setVisibility(View.GONE);
                 } else {
                     k = new byte[]{0x00};
+
+                    _ISLOCK = false;
+                    lock_layout.setVisibility(View.VISIBLE);
                 }
                 if (null != bgc_alert)
                     sendCommand(k, bgc_alert);
             }
         });
-
 
         Intent i = getIntent();
         mac = i.getStringExtra("mac");
@@ -254,7 +267,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     latitude_tvid.setText(msg.obj.toString());
                     break;
                 case _GET_STATE:
-                    if (!isBLEConnect) {
+                    if (!isBLEConnect && _ISLOCK) {
                         devstate_tvid.setText(msg.obj.toString().equals("false") ? R.string.cast_unlost : R.string.cast_lost);
                     }else{
                         devstate_tvid.setText(R.string.cast_unlost);

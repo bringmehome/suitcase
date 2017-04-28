@@ -165,8 +165,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/cast_unlost"
                     android:gravity="right"
+                    android:text="@string/cast_unlost"
                     android:textColor="@color/c666" />
             </LinearLayout>
 
@@ -256,17 +256,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/suit_lock"
+                    android:text="@string/suit_alert"
                     android:textColor="@color/c333"
                     android:textSize="@dimen/font_size" />
 
                 <Switch
-                    android:id="@+id/lock_switch"
+                    android:id="@+id/lock_alert"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/lock_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/location_btn_pad"
@@ -278,12 +279,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/suit_alert"
+                    android:text="@string/suit_lock"
                     android:textColor="@color/c333"
                     android:textSize="@dimen/font_size" />
 
                 <Switch
-                    android:id="@+id/lock_alert"
+                    android:id="@+id/lock_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
             </LinearLayout>
