@@ -193,13 +193,10 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     k = new byte[]{0x01};
 
                     _ISLOCK = true;
-
-                    lock_layout.setVisibility(View.GONE);
                 } else {
                     k = new byte[]{0x00};
 
                     _ISLOCK = false;
-                    lock_layout.setVisibility(View.VISIBLE);
                 }
                 if (null != bgc_alert)
                     sendCommand(k, bgc_alert);
@@ -268,7 +265,13 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     break;
                 case _GET_STATE:
                     if (!isBLEConnect && _ISLOCK) {
-                        devstate_tvid.setText(msg.obj.toString().equals("false") ? R.string.cast_unlost : R.string.cast_lost);
+                        if(msg.obj.toString().equals("false")){
+                            devstate_tvid.setText(R.string.cast_unlost);
+                            lock_layout.setVisibility(View.VISIBLE);
+                        }else{
+                            devstate_tvid.setText(R.string.cast_lost);
+                            lock_layout.setVisibility(View.GONE);
+                        }
                     }else{
                         devstate_tvid.setText(R.string.cast_unlost);
                     }
