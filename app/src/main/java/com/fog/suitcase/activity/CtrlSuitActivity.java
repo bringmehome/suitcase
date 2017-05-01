@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -180,7 +181,6 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     if (null != bgc_switch)
                         sendCommand(k, bgc_switch);
                 }
-
             }
         });
 
@@ -265,14 +265,15 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     break;
                 case _GET_STATE:
                     if (!isBLEConnect && _ISLOCK) {
-                        if(msg.obj.toString().equals("false")){
+                        if (msg.obj.toString().equals("false")) {
                             devstate_tvid.setText(R.string.cast_unlost);
                             lock_layout.setVisibility(View.VISIBLE);
-                        }else{
+                        } else {
                             devstate_tvid.setText(R.string.cast_lost);
                             lock_layout.setVisibility(View.GONE);
+                            playWarning();
                         }
-                    }else{
+                    } else {
                         devstate_tvid.setText(R.string.cast_unlost);
                     }
                     break;
@@ -608,6 +609,55 @@ public class CtrlSuitActivity extends AppCompatActivity {
 
         return null == asb ? "false" : asb.getData().getCase_lost();
     }
+
+
+    private MediaPlayer mp = null;
+
+    /**
+     * 播放警报
+     */
+    private void playWarning() {
+        if (mp == null) {
+            mp = createLocalMp3();
+        }
+        try {
+            //在播放音频资源之前，必须调用Prepare方法完成些准备工作
+            mp.prepare();
+            //开始播放音频
+            mp.start();
+
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    mp.stop();//停止播放
+                    mp.release();//释放资源
+                    mp = null;
+                }
+            }, 5000);
+
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 创建本地MP3
+     *
+     * @return
+     */
+    public MediaPlayer createLocalMp3() {
+        /**
+         * 创建音频文件的方法：
+         * 1、播放资源目录的文件：MediaPlayer.create(MainActivity.this,R.raw.beatit);//播放res/raw 资源目录下的MP3文件
+         * 2:播放sdcard卡的文件：mediaPlayer=new MediaPlayer();
+         *   mediaPlayer.setDataSource("/sdcard/beatit.mp3");//前提是sdcard卡要先导入音频文件
+         */
+        MediaPlayer mp = MediaPlayer.create(this, R.raw.warning);
+        mp.stop();
+        return mp;
+    }
+
 
     /**
      * 通知handler来更新页面
