@@ -48,13 +48,14 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/white"
                 android:gravity="center"
                 android:orientation="vertical">
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/banner_img_size"
-                    android:src="@mipmap/con_banner" />
+                    android:src="@mipmap/con_banner0" />
             </LinearLayout>
 
 
@@ -149,6 +150,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/location_btn_pad"
                 android:background="@color/white"
                 android:orientation="horizontal"
                 android:padding="@dimen/activity_vertical_margin">

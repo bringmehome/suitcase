@@ -186,7 +186,6 @@ public class BleListActivity extends AppCompatActivity {
                 BluetoothDevice device = result.getDevice();
                 if (!devices.contains(device)) {  //判断是否已经添加
                     devices.add(device);
-
                     if (device.getName() != null) {
                         String tmpDevName = device.getName();
 //                        String tmpDevName = device.getName() != null ? device.getName() : "Unknow";
