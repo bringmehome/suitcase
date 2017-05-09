@@ -60,19 +60,25 @@ public class GeoCoderActivity extends AppCompatActivity implements OnGetGeoCoder
         String latstr = getIntent().getStringExtra("latitude");
         String lonstr = getIntent().getStringExtra("longitude");
 
+        // 将GPS设备采集的原始GPS坐标转换成百度坐标
         // 将google地图、soso地图、aliyun地图、mapabc地图和amap地图// 所用坐标转换成百度坐标
         CoordinateConverter converter = new CoordinateConverter();
         converter.from(CoordinateConverter.CoordType.COMMON);
 
         LatLng ptCenter = new LatLng((Double.valueOf(latstr)), (Double.valueOf(lonstr)));
         // 反Geo搜索
-        mSearch.reverseGeoCode(new ReverseGeoCodeOption().location(ptCenter));
+//        mSearch.reverseGeoCode(new ReverseGeoCodeOption().location(ptCenter));
 
 //        // sourceLatLng待转换坐标
 //        converter.coord(ptCenter);
 //        LatLng desLatLng = converter.convert();
-        // 反Geo搜索
-//        mSearch.reverseGeoCode(new ReverseGeoCodeOption().location(desLatLng));
+
+        converter.from(CoordinateConverter.CoordType.GPS);
+        // sourceLatLng待转换坐标
+        converter.coord(ptCenter);
+        LatLng desLatLng = converter.convert();
+//         反Geo搜索
+        mSearch.reverseGeoCode(new ReverseGeoCodeOption().location(desLatLng));
 
         ImageView map_back = (ImageView) findViewById(R.id.map_back);
         map_back.setOnClickListener(new View.OnClickListener() {
