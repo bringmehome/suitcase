@@ -20,31 +20,32 @@
         android:id="@+id/txtv_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="8dp"
-        android:layout_toRightOf="@id/imgv_logo"
+        android:layout_marginLeft="18dp"
         android:text="Ble name"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/imgv_logo"
+        android:layout_marginStart="30dp" />
 
-    <TextView
-        android:id="@+id/txtv_address"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@id/txtv_name"
-        android:layout_below="@id/txtv_name"
-        android:text="00:00:00:00:00:00"
-        android:textSize="12sp" />
+    <!--<TextView-->
+        <!--android:id="@+id/txtv_address"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignLeft="@id/txtv_name"-->
+        <!--android:layout_below="@id/txtv_name"-->
+        <!--android:text="00:00:00:00:00:00"-->
+        <!--android:textSize="12sp" />-->
 
-    <TextView
-        android:id="@+id/txtv_connState"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@id/txtv_name"
-        android:layout_alignParentBottom="true"
-        android:layout_below="@id/txtv_address"
-        android:layout_marginTop="4dp"
-        android:text="状态: 未连接"
-        android:textSize="12sp" />
+    <!--<TextView-->
+        <!--android:id="@+id/txtv_connState"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignLeft="@id/txtv_name"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_below="@id/txtv_address"-->
+        <!--android:layout_marginTop="4dp"-->
+        <!--android:text="状态: 未连接"-->
+        <!--android:textSize="12sp" />-->
 
     <Button
         android:id="@+id/btn_connect"

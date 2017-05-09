@@ -121,9 +121,9 @@ public class BleListActivity extends AppCompatActivity {
                 if (null != deviceMap.get("name")) {
                     holder.setText(R.id.txtv_name, deviceMap.get("name").toString());
                 }
-                holder.setText(R.id.txtv_address, deviceMap.get("address").toString());
-                holder.setText(R.id.txtv_connState, ((boolean) deviceMap.get("isConnect")) ? getResources().getString(R.string.state_connected) : getResources().getString(R.string.state_disconnected));
-                holder.setText(R.id.btn_connect, ((boolean) deviceMap.get("isConnect")) ? getResources().getString(R.string.disconnected) : getResources().getString(R.string.connected));
+//                holder.setText(R.id.txtv_address, deviceMap.get("address").toString());
+//                holder.setText(R.id.txtv_connState, ((boolean) deviceMap.get("isConnect")) ? getResources().getString(R.string.state_connected) : getResources().getString(R.string.state_disconnected));
+//                holder.setText(R.id.btn_connect, ((boolean) deviceMap.get("isConnect")) ? getResources().getString(R.string.disconnected) : getResources().getString(R.string.connected));
                 holder.getView(R.id.btn_connect).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -169,44 +169,62 @@ public class BleListActivity extends AppCompatActivity {
             startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), 0);  // 弹对话框的形式提示用户开启蓝牙
 //            bluetoothAdapter.enable();// 强制开启，不推荐使用
         } else {
-            scanner = bluetoothAdapter.getBluetoothLeScanner();
-            scanner.startScan(leCallback);
+//            scanner = bluetoothAdapter.getBluetoothLeScanner();
+//            scanner.startScan(leCallback);
         }
+        setDevAdapter();
     }
 
     private void stopScanLeDevice() {
-        scanner.stopScan(leCallback);
+//        scanner.stopScan(leCallback);
     }
 
-    ScanCallback leCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            super.onScanResult(callbackType, result);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                BluetoothDevice device = result.getDevice();
-                if (!devices.contains(device)) {  //判断是否已经添加
-                    devices.add(device);
-                    if (device.getName() != null) {
-                        String tmpDevName = device.getName();
-//                        String tmpDevName = device.getName() != null ? device.getName() : "Unknow";
-                        String tmpDevAddress = device.getAddress();
-                        HashMap<String, Object> deviceMap = new HashMap<>();
-                        deviceMap.put("name", tmpDevName);
-                        deviceMap.put("address", tmpDevAddress);
-                        deviceMap.put("isConnect", false);
-                        deviceList.add(deviceMap);
-                    }
-                    deviceAdapter.notifyDataSetChanged();
-                }
-            }
-        }
+//    ScanCallback leCallback = new ScanCallback() {
+//        @Override
+//        public void onScanResult(int callbackType, ScanResult result) {
+//            super.onScanResult(callbackType, result);
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                BluetoothDevice device = result.getDevice();
+//                if (!devices.contains(device)) {  //判断是否已经添加
+//                    devices.add(device);
+//                    if (device.getName() != null) {
+//                        String tmpDevName = device.getName();
+////                        String tmpDevName = device.getName() != null ? device.getName() : "Unknow";
+//                        String tmpDevAddress = device.getAddress();
+//                        HashMap<String, Object> deviceMap = new HashMap<>();
+//                        deviceMap.put("name", tmpDevName);
+//                        deviceMap.put("address", tmpDevAddress);
+//                        deviceMap.put("isConnect", false);
+//                        deviceList.add(deviceMap);
+//                    }
+//                    deviceAdapter.notifyDataSetChanged();
+//                }
+//            }
+//        }
+//
+//        @Override
+//        public void onScanFailed(int errorCode) {
+//            super.onScanFailed(errorCode);
+//            Log.e("搜索失败", "");
+//        }
+//    };
 
-        @Override
-        public void onScanFailed(int errorCode) {
-            super.onScanFailed(errorCode);
-            Log.e("搜索失败", "");
-        }
-    };
+    private void setDevAdapter() {
+        // 047863A004A2
+        // 047863A00564
+
+        HashMap<String, Object> deviceMap = new HashMap<>();
+        deviceMap.put("name", "拉杆箱1");
+        deviceMap.put("address", "04:78:63:A0:04:A2");
+        deviceList.add(deviceMap);
+
+        HashMap<String, Object> deviceMap1 = new HashMap<>();
+        deviceMap1.put("name", "红色拉杆箱");
+        deviceMap1.put("address", "04:78:63:A0:05:64");
+        deviceList.add(deviceMap1);
+
+        deviceAdapter.notifyDataSetChanged();
+    }
 
     /**
      * 监听蓝牙的变化
@@ -214,23 +232,23 @@ public class BleListActivity extends AppCompatActivity {
     private void listenBLEchange() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(broadcastReceiver, intentFilter);
+//        registerReceiver(broadcastReceiver, intentFilter);
     }
 
-    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) { // 蓝牙开关发生变化
-                // 这里可以直接使用mBluetoothAdapter.isEnabled()来判断当前蓝牙状态
-                scanner = bluetoothAdapter.getBluetoothLeScanner();
-                try {
-                    if (null != scanner)
-                        scanner.startScan(leCallback);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    };
+//    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            String action = intent.getAction();
+//            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) { // 蓝牙开关发生变化
+//                // 这里可以直接使用mBluetoothAdapter.isEnabled()来判断当前蓝牙状态
+//                scanner = bluetoothAdapter.getBluetoothLeScanner();
+//                try {
+//                    if (null != scanner)
+//                        scanner.startScan(leCallback);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//    };
 }

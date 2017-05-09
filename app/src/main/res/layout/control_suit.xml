@@ -31,8 +31,12 @@
             android:textSize="@dimen/font_size" />
 
         <ImageView
+            android:id="@+id/suit_map"
             android:layout_width="@dimen/back_icon_size"
-            android:layout_height="@dimen/back_icon_size" />
+            android:layout_height="@dimen/back_icon_size"
+            android:src="@mipmap/map_icon"
+            android:layout_gravity="center"
+            android:layout_marginRight="@dimen/location_pad"/>
     </LinearLayout>
 
     <ScrollView

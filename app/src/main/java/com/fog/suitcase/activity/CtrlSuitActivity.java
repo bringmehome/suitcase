@@ -71,6 +71,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
 
     private TextView ble_status;
     private ImageView arrow_back;
+    private ImageView suit_map;
     //    private TextView update_loc;
     private TextView longitude_tvid;
     private TextView latitude_tvid;
@@ -135,6 +136,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
         latitude_tvid = (TextView) findViewById(R.id.latitude_tvid);
         devstate_tvid = (TextView) findViewById(R.id.devstate_tvid);
         arrow_back = (ImageView) findViewById(R.id.arrow_back);
+        suit_map = (ImageView) findViewById(R.id.suit_map);
         lock_switch = (Switch) findViewById(R.id.lock_switch);
         lock_alert = (Switch) findViewById(R.id.lock_alert);
         lock_layout = (LinearLayout) findViewById(R.id.lock_layout);
@@ -207,6 +209,21 @@ public class CtrlSuitActivity extends AppCompatActivity {
         mac = i.getStringExtra("mac");
         _DEVICE_TMP = mac.replace(":", "");
         deviceid_tvid.setText(_DEVICE_TMP);
+
+        suit_map.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!_LONGITUDE_TMP.equals("") && !_LATITUDE_TMP.equals("")) {
+                    Log.d(TAG, _LONGITUDE_TMP + "  " + _LATITUDE_TMP);
+                    Intent intent = new Intent(context, GeoCoderActivity.class);
+                    intent.putExtra("longitude", _LONGITUDE_TMP);
+                    intent.putExtra("latitude", _LATITUDE_TMP);
+                    startActivity(intent);
+                } else {
+                    Log.d(TAG, "-----为空");
+                }
+            }
+        });
     }
 
     private void connectble() {
@@ -570,8 +587,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
                 Log.d(TAG, "get -- state -- " + htmlStr);
                 if (htmlStr.indexOf("code") > -1) {
                     if (0 == getResCode(htmlStr)) {
-                        Log.d(TAG, "state -- success -- " + getCastLost(htmlStr));
-                        send2Handler(_GET_STATE, getCastLost(htmlStr));
+                        updateDevInfo(htmlStr);
                     }
                 }
             }
@@ -587,27 +603,25 @@ public class CtrlSuitActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        Log.d(TAG, asb.getMeta().getMessage());
-//        Log.d(TAG, asb.getMeta().getCode() +"");
-//        Log.d(TAG, asb.getData().getDevice());
-
         return null == asb ? 1 : asb.getMeta().getCode();
     }
 
-    private String getCastLost(String message) {
+    private void updateDevInfo(String message) {
 
         Gson gson = new Gson();
         AppStateBean asb = null;
         try {
             asb = gson.fromJson(message, AppStateBean.class);
+            send2Handler(_GET_STATE, null == asb ? "false" : asb.getData().getCase_lost());
+
+            _LONGITUDE_TMP = asb.getData().getLongitude();
+            _LATITUDE_TMP = asb.getData().getLatitude();
+            send2Handler(_UP_LONG, _LONGITUDE_TMP);
+            send2Handler(_UP_LATI, _LATITUDE_TMP);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        Log.d(TAG, asb.getMeta().getMessage());
-//        Log.d(TAG, asb.getMeta().getCode() +"");
-//        Log.d(TAG, asb.getData().getDevice());
-
-        return null == asb ? "false" : asb.getData().getCase_lost();
     }
 
 

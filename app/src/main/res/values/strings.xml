@@ -14,6 +14,7 @@
     <string name="suit_lock">箱包开关</string>
     <string name="suit_alert">设备布防</string>
     <string name="suit_des">智能锁检测到异常开门时，触发报警器恐吓盗贼，主动保护您的财产安全。</string>
+    <string name="suit_map">地图</string>
 
     <string name="updatelocation">更新经纬度</string>
     <string name="longitude">经度</string>
