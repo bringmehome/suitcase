@@ -422,14 +422,14 @@ public class CtrlSuitActivity extends AppCompatActivity {
                 try {
                     Log.d(TAG, "onCharacteristicChanged ---> " + characteristic.getUuid().toString().equals(COMPARA._LONGITUDE) + " === ");
                     switch (characteristic.getUuid().toString()) {
-                        case COMPARA._LONGITUDE:
-                            _LONGITUDE_TMP = new String(characteristic.getValue(), "UTF-8");
-                            send2Handler(_UP_LONG, _LONGITUDE_TMP);
-                            break;
-                        case COMPARA._LATITUDE:
-                            _LATITUDE_TMP = new String(characteristic.getValue(), "UTF-8");
-                            send2Handler(_UP_LATI, _LATITUDE_TMP);
-                            break;
+//                        case COMPARA._LONGITUDE:
+//                            _LONGITUDE_TMP = new String(characteristic.getValue(), "UTF-8");
+//                            send2Handler(_UP_LONG, _LONGITUDE_TMP);
+//                            break;
+//                        case COMPARA._LATITUDE:
+//                            _LATITUDE_TMP = new String(characteristic.getValue(), "UTF-8");
+//                            send2Handler(_UP_LATI, _LATITUDE_TMP);
+//                            break;
                         case COMPARA._SWITCH:
                             _LATCH_SWITCH_TMP = new String(characteristic.getValue(), "UTF-8");
                             break;
@@ -483,6 +483,9 @@ public class CtrlSuitActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 上报数据
+     */
     private void upData() {
         mOkHttpClient = new OkHttpClient();
 
