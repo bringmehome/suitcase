@@ -51,6 +51,7 @@ import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTED;
 
 public class CtrlSuitActivity extends AppCompatActivity {
     private String TAG = "---bleinfo---";
+
     public static final int SERVICE_BIND = 1;
     public static final int _UPDATETV = 2;
 
@@ -91,7 +92,8 @@ public class CtrlSuitActivity extends AppCompatActivity {
     // 各种服务的UUID
     private BluetoothGattCharacteristic bgc_longitude = null;
     private BluetoothGattCharacteristic bgc_latitude = null;
-    private BluetoothGattCharacteristic bgc_switch = null;
+    private BluetoothGattCharacteristic bgc_switch_r = null;
+    private BluetoothGattCharacteristic bgc_switch_w = null;
     private BluetoothGattCharacteristic bgc_alert = null;
     private BluetoothGattCharacteristic bgc_devid = null;
 
@@ -180,8 +182,8 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     } else {
                         k = new byte[]{0x00};
                     }
-                    if (null != bgc_switch)
-                        sendCommand(k, bgc_switch);
+                    if (null != bgc_switch_w)
+                        sendCommand(k, bgc_switch_w);
                 }
             }
         });
@@ -271,8 +273,21 @@ public class CtrlSuitActivity extends AppCompatActivity {
                     break;
                 case _UPDATETV:
                     ble_status.setText(getStatus(Integer.parseInt(msg.obj.toString())));
-                    if (msg.obj.toString().equals("0"))
+                    if (msg.obj.toString().equals("0")){
                         connectble();
+                        if (!isBLEConnect && _ISLOCK) {
+                            _CASE_LOST_TMP = "true";
+
+                            devstate_tvid.setText(R.string.cast_lost);
+                            lock_layout.setVisibility(View.GONE);
+                            playWarning();
+                        }else {
+                            _CASE_LOST_TMP = "false";
+
+                            devstate_tvid.setText(R.string.cast_unlost);
+                            lock_layout.setVisibility(View.VISIBLE);
+                        }
+                    }
                     break;
                 case _UP_LONG:
                     longitude_tvid.setText(msg.obj.toString());
@@ -342,19 +357,24 @@ public class CtrlSuitActivity extends AppCompatActivity {
                             String charUuid = characteristics.get(i).getUuid().toString();
 
                             switch (charUuid) {
-                                case COMPARA._LONGITUDE:
-                                    bgc_longitude = characteristics.get(i);
-                                    readCharacter();
+//                                case COMPARA._LONGITUDE:
+//                                    bgc_longitude = characteristics.get(i);
+//                                    readCharacter();
+//                                    break;
+//                                case COMPARA._LATITUDE:
+//                                    bgc_latitude = characteristics.get(i);
+//                                    readCharacter();
+//                                    break;
+                                case COMPARA._SWITCH_W:
+                                    bgc_switch_w = characteristics.get(i);
                                     break;
-                                case COMPARA._LATITUDE:
-                                    bgc_latitude = characteristics.get(i);
+                                case COMPARA._SWITCH_R:
+                                    bgc_switch_r = characteristics.get(i);
                                     readCharacter();
-                                    break;
-                                case COMPARA._SWITCH:
-                                    bgc_switch = characteristics.get(i);
                                     break;
                                 case COMPARA._ALERT:
                                     bgc_alert = characteristics.get(i);
+                                    readCharacter();
                                     break;
                                 case COMPARA._DEVID:
                                     bgc_devid = characteristics.get(i);
@@ -401,7 +421,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
 //                        case COMPARA._LONGITUDE:
 //                            send2Handler(_UP_LOCATION, res);
 //                            break;
-                        case COMPARA._SWITCH:
+                        case COMPARA._SWITCH_R:
                             send2Handler(_UP_SWITCH, res);
                             break;
                         case COMPARA._ALERT:
@@ -420,7 +440,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
             @Override
             public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
                 try {
-                    Log.d(TAG, "onCharacteristicChanged ---> " + characteristic.getUuid().toString().equals(COMPARA._LONGITUDE) + " === ");
+//                    Log.d(TAG, "onCharacteristicChanged ---> " + characteristic.getUuid().toString().equals(COMPARA._LONGITUDE) + " === ");
                     switch (characteristic.getUuid().toString()) {
 //                        case COMPARA._LONGITUDE:
 //                            _LONGITUDE_TMP = new String(characteristic.getValue(), "UTF-8");
@@ -430,8 +450,9 @@ public class CtrlSuitActivity extends AppCompatActivity {
 //                            _LATITUDE_TMP = new String(characteristic.getValue(), "UTF-8");
 //                            send2Handler(_UP_LATI, _LATITUDE_TMP);
 //                            break;
-                        case COMPARA._SWITCH:
-                            _LATCH_SWITCH_TMP = new String(characteristic.getValue(), "UTF-8");
+                        case COMPARA._SWITCH_R:
+//                            _LATCH_SWITCH_TMP = new String(characteristic.getValue(), "UTF-8");
+                            _LATCH_SWITCH_TMP = getSwitch(characteristic.getValue());
                             break;
                         case COMPARA._DEVID:
                             _DEVICE_TMP = new String(characteristic.getValue(), "UTF-8");
@@ -473,9 +494,9 @@ public class CtrlSuitActivity extends AppCompatActivity {
             mGatt.readCharacteristic(bgc_latitude);
             mGatt.setCharacteristicNotification(bgc_latitude, true);
         }
-        if (null != bgc_switch) {
-            mGatt.readCharacteristic(bgc_switch);
-            mGatt.setCharacteristicNotification(bgc_switch, true);
+        if (null != bgc_switch_r) {
+            mGatt.readCharacteristic(bgc_switch_r);
+            mGatt.setCharacteristicNotification(bgc_switch_r, true);
         }
         if (null != bgc_alert) {
             mGatt.readCharacteristic(bgc_alert);
@@ -527,6 +548,11 @@ public class CtrlSuitActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * 给云端发送指令
+     *
+     * @param body
+     */
     private void sendCloudCmd(FormBody body) {
         //创建okHttpClient对象
         mOkHttpClient = new OkHttpClient();
@@ -562,7 +588,7 @@ public class CtrlSuitActivity extends AppCompatActivity {
     }
 
     /**
-     * 获取设备状态
+     * 去云端获取设备状态
      */
     private void getStates() {
         //创建okHttpClient对象
@@ -597,6 +623,12 @@ public class CtrlSuitActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * 解析云端返回的code
+     *
+     * @param message
+     * @return
+     */
     private int getResCode(String message) {
 
         Gson gson = new Gson();
@@ -609,6 +641,20 @@ public class CtrlSuitActivity extends AppCompatActivity {
         return null == asb ? 1 : asb.getMeta().getCode();
     }
 
+    /**
+     * 将byte数组转成string
+     * @param data
+     * @return
+     */
+    private String getSwitch(byte[] data) {
+        return data[0] == 1 ? "true" : "false";
+    }
+
+    /**
+     * 更新设备的信息
+     *
+     * @param message
+     */
     private void updateDevInfo(String message) {
 
         Gson gson = new Gson();
@@ -689,6 +735,9 @@ public class CtrlSuitActivity extends AppCompatActivity {
         mHandler.sendMessage(msg);
     }
 
+    /**
+     * 5s执行一次获取设备的状态
+     */
     private Runnable mRunnable = new Runnable() {
         public void run() {
             // 每3秒执行一次
